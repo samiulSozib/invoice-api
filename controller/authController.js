@@ -95,9 +95,12 @@ exports.signIn=async(req,res,next)=>{
 // add client
 
 exports.addClient = async (req, res, next) => {
-    let { phone_number, name,address,business_owner_id  } = req.body;
+    let { phone_number, name,address  } = req.body;
+    const business_owner_id = req.business_owner_id; // From middleware
+
     const transactionScope = await sequelize.transaction();
     try {
+        console.log(phone_number,name,address,business_owner_id)
         // Check if a user with the same phone_number already exists
         const existingUser = await db.client.findOne({
             where: { phone_number:phone_number,business_owner_id:business_owner_id },
@@ -138,13 +141,22 @@ exports.resetPassword=async(req,res,next)=>{
     let {phone_number,date_of_birth,password}=req.body
     const transactionScope = await sequelize.transaction();
     try {
-  
-        const user=await db.businessOwner.findOne({
-            where:{
-                phone_number:phone_number,
-                date_of_birth:date_of_birth
+        console.log(phone_number)
+        const user = await db.businessOwner.findOne({
+            where: {
+                [Op.and]:[
+                    {
+                        phone_number:phone_number
+                    },
+                    {
+                        date_of_birth:date_of_birth
+                    }
+                    
+                ]
             },
-        },{transaction:transactionScope})
+            transaction: transactionScope // Move transaction option here
+        });
+        
 
         if(!user){
             await transactionScope.rollback()
@@ -162,6 +174,8 @@ exports.resetPassword=async(req,res,next)=>{
         },{transaction:transactionScope})
 
         
+
+        
         await transactionScope.commit();
   
         return res.status(200).json({status: true, message: 'Password Update Success', business_owner:user })
@@ -177,7 +191,7 @@ exports.resetPassword=async(req,res,next)=>{
 
 // update business profile
 exports.updateBusinessProfile = async (req, res, next) => {
-    const business_owner_id = req.query.business_owner_id; 
+    const business_owner_id = req.business_owner_id; 
     const { name, address } = req.body;
     const transactionScope = await sequelize.transaction();
 
@@ -193,7 +207,7 @@ exports.updateBusinessProfile = async (req, res, next) => {
         let profile_image=user.thumbnail_image
 
         if(req.file){
-            profile_image=`${base_url}/uploads/${req.file.filename}`
+            profile_image=`/uploads/${req.file.filename}`
         }
 
 
@@ -203,7 +217,7 @@ exports.updateBusinessProfile = async (req, res, next) => {
             thumbnail_image:profile_image,
             address
         }, {
-            where: { business_owner_id: business_owner_id },
+            where: { id: business_owner_id },
             transaction: transactionScope
         });
 
@@ -213,14 +227,14 @@ exports.updateBusinessProfile = async (req, res, next) => {
         return res.status(200).json({ status: true, message: 'Business Profile updated successfully', business_owner: updatedUser });
     } catch (error) {
         if (transactionScope) await transactionScope.rollback();
+        console.log(error)
         return res.status(500).json({ status: false, message: 'Server Error', user: {} });
     }
 };
 
 // update client profile
 exports.updateClientProfile = async (req, res, next) => {
-    const client_id = req.query.client_id; 
-    const { name, address } = req.body;
+    const {client_id, name, address } = req.body;
     const transactionScope = await sequelize.transaction();
 
     try {
@@ -241,7 +255,7 @@ exports.updateClientProfile = async (req, res, next) => {
             name,
             address
         }, {
-            where: { client_id: client_id },
+            where: { id: client_id },
             transaction: transactionScope
         });
 
@@ -259,7 +273,7 @@ exports.updateClientProfile = async (req, res, next) => {
 
 // get business profile
 exports.getBusinessProfile = async (req, res, next) => {
-    const business_owner_id = req.query.business_owner_id;
+    const business_owner_id = req.business_owner_id;
     try {
         // Find the user by ID
         const user=await db.businessOwner.findByPk(business_owner_id)
@@ -277,7 +291,7 @@ exports.getBusinessProfile = async (req, res, next) => {
 
 // get client profile
 exports.getClientProfile = async (req, res, next) => {
-    const client_id = req.query.client_id;
+    const client_id = req.body.client_id;
     try {
         // Find the user by ID
         const user=await db.client.findByPk(client_id)
@@ -294,7 +308,7 @@ exports.getClientProfile = async (req, res, next) => {
 
 // get client by business owner
 exports.getClientsByBusinessOwner = async (req, res, next) => {
-    const business_owner_id = req.query.business_owner_id;
+    const business_owner_id = req.business_owner_id;
     try {
         // Find the user by ID
         const users=await db.client.findAll({where:{business_owner_id:business_owner_id}})

@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
             type:DataTypes.STRING
         },
         date_of_birth:{
-            type:DataTypes.DATE
+            type:DataTypes.CHAR(15)
         }
     }, {
         timestamps: true
