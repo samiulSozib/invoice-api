@@ -18,9 +18,6 @@ jobs:
         with:
           node-version: '18'
 
-      - name: 🔨 Build Project
-        run: |
-          npm install
 
       - name: 📂 Sync files
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
