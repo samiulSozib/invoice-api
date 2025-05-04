@@ -1,17 +1,17 @@
 const { Sequelize, DataTypes } = require('sequelize')
 
-// const sequelize = new Sequelize('samizrnp_invoice', 'samizrnp_invoice', '.$fkuxFE;}9A', {
-//     host: 'localhost',
-//     dialect: 'mysql',
-//     pool: { max: 5, min: 0, idle: 10000 }
-// })
-
-const sequelize = new Sequelize('invoice', 'root', '', {
+const sequelize = new Sequelize('samizrnp_invoice', 'samizrnp_invoice', '.$fkuxFE;}9A', {
     host: 'localhost',
-    logging: true,
     dialect: 'mysql',
     pool: { max: 5, min: 0, idle: 10000 }
 })
+
+// const sequelize = new Sequelize('invoice', 'root', '', {
+//     host: 'localhost',
+//     logging: true,
+//     dialect: 'mysql',
+//     pool: { max: 5, min: 0, idle: 10000 }
+// })
 
 sequelize.authenticate()
     .then(() => {
